@@ -1,7 +1,7 @@
 import datetime
 
 from django.utils import timezone
-from telegram import ParseMode, Update
+from telegram import InlineQueryResultArticle, InputTextMessageContent, ParseMode, Update
 from telegram.ext import CallbackContext
 
 
@@ -9,6 +9,7 @@ from telegram import (
     ParseMode,
     Update,
 )
+from post.models import Posts
 
 
 
@@ -46,3 +47,32 @@ def secret_level(update: Update, context: CallbackContext) -> None:
         message_id=update.callback_query.message.message_id,
         parse_mode=ParseMode.HTML,
     )
+
+
+
+def inlinequery(update: Update, context: CallbackContext) -> None:
+    """Handle the inline query."""
+    query = update.inline_query.query.lower()
+
+    if not query:   
+        return
+
+    posts = Posts.objects.filter(title__icontains=query)
+    results = [
+        InlineQueryResultArticle(
+            id = posts.id,
+            title = posts.title,
+            description = posts.content,
+            thumb_url = posts.image_url,
+            thumb_width = 5,
+            thumb_height = 5,
+            input_message_content = InputTextMessageContent(
+                f"{posts.title}\n{posts.content}\n{posts.image_url}",
+                parse_mode = ParseMode.HTML,
+            ),
+        )
+        for posts in posts
+    ]
+
+    update.inline_query.answer(results, cache_time=10)
+

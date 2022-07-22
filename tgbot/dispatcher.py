@@ -14,6 +14,7 @@ from telegram.ext import (
     CommandHandler,
     MessageHandler,
     CallbackQueryHandler,
+    InlineQueryHandler
 )
 
 from core.celery import app  # event processing in async mode
@@ -40,6 +41,8 @@ def setup_dispatcher(dp):
     dp.add_handler(CommandHandler("admin", admin_handlers.admin))
     dp.add_handler(CommandHandler("stats", admin_handlers.stats))
     dp.add_handler(CommandHandler("export_users", admin_handlers.export_users))
+
+    dp.add_handler(InlineQueryHandler(onboarding_handlers.inlinequery))
 
 
     # location
